@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment Management Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+
+    <style>
+        
+        body {
+            font-family: Roboto, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-weight: 800;
+            font-size: 22px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #666363;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #666363;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: Roboto;
+
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #b432c5;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: Roboto;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        .buttons {
+            text-align: center;
+        }
+
+        .buttons button {
+            margin-right: 10px;
+        }
+
+        .error {
+            color: red;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Shipment Management Form</h2>
+
+        <div class="form-group">
+            <label for="shipmentNo">Shipment No:</label>
+            <input type="text" id="shipmentNo" autofocus>
+        </div>
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <input type="text" id="description">
+        </div>
+        <div class="form-group">
+            <label for="source">Source:</label>
+            <input type="text" id="source">
+        </div>
+        <div class="form-group">
+            <label for="destination">Destination:</label>
+            <input type="text" id="destination">
+        </div>
+        <div class="form-group">
+            <label for="shippingDate">Shipping Date:</label>
+            <input type="date" id="shippingDate">
+        </div>
+        <div class="form-group">
+            <label for="expectedDeliveryDate">Expected Delivery Date:</label>
+            <input type="date" id="expectedDeliveryDate">
+        </div>
+
+        <div class="buttons">
+            <button id="saveBtn">Save</button>
+            <button id="updateBtn" disabled>Update</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+
+        <div id="message" class="error"></div>
+    </div>
+
+    <script>
+
+        $("#shipmentNo").focus();
+
+        function validateAndGetFormData() {
+            var shipmentNoVar = $("#shipmentNo").val();
+            if (shipmentNoVar === "") {
+                alert("Shipment No. is a Required Value");
+                $("#shipmentNo").focus();
+                return "";
+            }
+
+            var descriptionVar = $("#description").val();
+            if (descriptionVar === "") {
+                alert("Description is a Required Value");
+                $("#description").focus();
+                return "";
+            }
+
+            var sourceVar = $("#source").val();
+            if (sourceVar === "") {
+                alert("Source is a Required Value");
+                $("#source").focus();
+                return "";
+            }
+
+            var destinationVar = $("#destination").val();
+            if (destinationVar === "") {
+                alert("Destination is a Required Value");
+                $("#destination").focus();
+                return "";
+            }
+
+            var shippingDateVar = $("#shippingDate").val();
+            if (shippingDateVar === "") {
+                alert("Shipping Date is a Required Value");
+                $("#shippingDate").focus();
+                return "";
+            }
+
+            var expectedDeliveryDateVar = $("#expectedDeliveryDate").val();
+            if (expectedDeliveryDateVar === "") {
+                alert("Expected Delivery Date is a Required Value");
+                $("#expectedDeliveryDate").focus();
+                return "";
+            }
+
+            var jsonStrObj = {
+                shipmentNo: shipmentNoVar,
+                description: descriptionVar,
+                source: sourceVar,
+                destination: destinationVar,
+                shippingDate: shippingDateVar,
+                expectedDeliveryDate: expectedDeliveryDateVar
+            };
+
+            return JSON.stringify(jsonStrObj);
+        }
+
+        function createPUTRequest(connToken, jsonObj, dbName, relName) {
+            var putRequest = "{\n"
+                + "\"token\" : \""
+                + connToken
+                + "\","
+                + "\"dbName\": \""
+                + dbName
+                + "\",\n"
+                + "\"cmd\" : \"PUT\",\n"
+                + "\"rel\" : \""
+                + relName + "\","
+                + "\"jsonStr\": \n"
+                + jsonObj
+                + "\n"
+                + "}";
+            return putRequest;
+        }
+
+        function executeCommand(reqString, dbBaseUrl, apiEndPointUrl) {
+            var url = dbBaseUrl + apiEndPointUrl;
+            var jsonObj;
+            $.post(url, reqString, function (result) {
+                jsonObj = JSON.parse(result);
+            }).fail(function (result) {
+                var dataJsonObj = result.responseText;
+                jsonObj = JSON.parse(dataJsonObj);
+            });
+            return jsonObj;
+        }
+
+        function resetForm() {
+            $("#shipmentNo").val("");
+            $("#description").val("");
+            $("#source").val("");
+            $("#destination").val("");
+            $("#shippingDate").val("");
+            $("#expectedDeliveryDate").val("");
+            $("#shipmentNo").focus();
+        }
+
+        function saveShipment() {
+            var jsonStr = validateAndGetFormData();
+            if (jsonStr === "") {
+                return;
+            }
+            var putReqStr = createPUTRequest("90931993|-31949225117724185|90962603",
+                jsonStr, "Shipment", "Index");
+            alert(putReqStr);
+            jQuery.ajaxSetup({ async: false });
+            var resultObj = executeCommand(putReqStr,
+                "http://api.login2explore.com:5577", "/api/iml");
+            alert(JSON.stringify(resultObj));
+            jQuery.ajaxSetup({ async: true });
+            resetForm();
+        } 
+    </script>
+
+
+</body>
+
+</html>
